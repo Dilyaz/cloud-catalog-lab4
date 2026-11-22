@@ -3,6 +3,7 @@ import socket
 import uuid
 from flask import Flask, request, redirect, render_template_string
 import boto3
+from botocore.client import Config
 
 app = Flask(__name__)
 
@@ -12,7 +13,11 @@ BUCKET_NAME = os.environ.get("BUCKET_NAME", "tau-lab2-erzhanov-20041111")
 
 dynamodb = boto3.resource("dynamodb", region_name=AWS_REGION)
 table = dynamodb.Table(TABLE_NAME)
-s3 = boto3.client("s3", region_name=AWS_REGION)
+s3 = boto3.client(
+    "s3",
+    region_name=AWS_REGION,
+    config=Config(signature_version="s3v4")
+)
 
 HTML = """
 <!doctype html>

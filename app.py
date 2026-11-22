@@ -78,23 +78,25 @@ def add_item():
     file_obj = request.files.get("file")
     file_url = ""
 
-    if file_obj and file_obj.filename:
-        key = f"{item_id}_{file_obj.filename}"
-        s3.upload_fileobj(file_obj, BUCKET_NAME, key)
-        file_url = s3.generate_presigned_url(
-            "get_object",
-            Params={"Bucket": BUCKET_NAME, "Key": key},
-            ExpiresIn=3600
-        )
+    try:
+        if file_obj and file_obj.filename:
+            key = f"{item_id}_{file_obj.filename}"
+            s3.upload_fileobj(file_obj, BUCKET_NAME, key)
+            file_url = s3.generate_presigned_url(
+                "get_object",
+                Params={"Bucket": BUCKET_NAME, "Key": key},
+                ExpiresIn=3600
+            )
 
-    # Попробуем записать с ключом 'id' (стандартный ключ в 3-й лабе)
-    table.put_item(Item={
-        "id": item_id,
-        "title": title,
-        "description": description,
-        "file_url": file_url
-    })
-    return redirect("/")
+        table.put_item(Item={
+            "id": item_id,
+            "title": title,
+            "description": description,
+            "file_url": file_url
+        })
+        return redirect("/")
+    except Exception as e:
+        return f"<h3>Ошибка при добавлении:</h3><pre>{e}</pre><a href='/'>Назад</a>", 500
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
